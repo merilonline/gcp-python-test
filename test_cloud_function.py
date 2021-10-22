@@ -1,6 +1,7 @@
 from google.cloud import storage
 from google.cloud import bigquery
 from main import load_file_to_bigquery
+import time
 
 
 class TestCloudFunction:
@@ -33,21 +34,12 @@ class TestCloudFunction:
         rows = query_job.result()
         query_success = False
         for row in rows:
-            print(row.count)
             query_success = True
         assert query_success
 
     def test_case2(self):
-        event = {
-            'bucket': 'meril-testbucket-1',
-            'contentType': 'text/csv',
-            'name': 'test/products.csv',
-            'timeCreated': '2021-10-22T14:22:53.036Z',
-            'updated': '2021-10-22T14:22:53.036Z'
-        }
-        self.upload_file_to_gcs('meril-testbucket-1', 'sample/products.csv', event['name'], self.project_name)
-
-        load_file_to_bigquery(event, {})
+        self.upload_file_to_gcs('meril-testbucket-1', 'sample/products.csv', 'test/products.csv', self.project_name)
+        time.sleep(10)
         client = bigquery.Client()
         QUERY = (
             'SELECT count(*) as `count` FROM `mylearning-329506.gcp_cloudfunction_test.products` LIMIT 1')
@@ -55,7 +47,6 @@ class TestCloudFunction:
         rows = query_job.result()
         query_success = False
         for row in rows:
-            print(row.count)
             query_success = True
         assert query_success
 
